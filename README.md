@@ -2,7 +2,7 @@
 
 ### Crucial Commands
 
-- **Install Dependencies:**
+- **Install All Dependencies:**
   ```bash
   npm install
   ```
@@ -23,6 +23,11 @@
   ```
 
 ### Installed Packages
+If you ever need to rebuild this project manually, here is the command used to install these packages:
+```bash
+npm install express mongoose jsonwebtoken bcryptjs dotenv cors
+```
+
 - `express`: Web server framework
 - `mongoose`: MongoDB database connector
 - `jsonwebtoken`: Secure login authentication (Tokens)
