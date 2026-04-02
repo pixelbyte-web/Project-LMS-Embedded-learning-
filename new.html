@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PixelByte — Coming Soon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple-light: #c084fc;
+      --purple-mid: #a855f7;
+      --blue-light: #818cf8;
+      --blue-mid: #6366f1;
+      --pink: #e879f9;
+      --bg: #f5f3ff;
+      --surface: rgba(255,255,255,0.72);
+      --text-dark: #1e1b4b;
+      --text-mid: #4c3f8a;
+      --text-soft: #7c6fb0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      overflow: hidden;
+    }
+
+    /* ── Canvas 3D Background ── */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* ── Frosted noise overlay ── */
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    /* ── Light blobs ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.35;
+      z-index: 1;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .blob1 { width: 520px; height: 520px; background: radial-gradient(circle, #c084fc, #818cf8); top: -120px; left: -100px; animation-delay: 0s; }
+    .blob2 { width: 420px; height: 420px; background: radial-gradient(circle, #e879f9, #a855f7); bottom: -80px; right: -80px; animation-delay: -5s; }
+    .blob3 { width: 300px; height: 300px; background: radial-gradient(circle, #93c5fd, #6366f1); top: 40%; left: 55%; animation-delay: -9s; }
+
+    @keyframes drift {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(30px, 25px) scale(1.07); }
+    }
+
+    /* ── Page Layout ── */
+    .page {
+      position: relative;
+      z-index: 10;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 2.4rem;
+    }
+
+    /* ── Logo ── */
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      animation: fadeUp 0.8s cubic-bezier(.22,1,.36,1) both;
+    }
+    .logo-img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 20px rgba(168,85,247,0.4));
+      animation: floatLogo 4s ease-in-out infinite;
+    }
+    .brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #7c3aed, #6366f1, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+    @keyframes floatLogo {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    /* ── Pill badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(168,85,247,0.1);
+      border: 1px solid rgba(168,85,247,0.25);
+      color: var(--purple-mid);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.9rem;
+      border-radius: 100px;
+      backdrop-filter: blur(8px);
+      animation: fadeUp 0.8s 0.1s cubic-bezier(.22,1,.36,1) both;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--purple-mid);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    /* ── Hero heading ── */
+    .hero-text {
+      text-align: center;
+      animation: fadeUp 0.8s 0.2s cubic-bezier(.22,1,.36,1) both;
+    }
+    .hero-text h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      color: var(--text-dark);
+    }
+    .hero-text h1 .accent {
+      background: linear-gradient(135deg, #7c3aed 0%, #6366f1 40%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-text p {
+      margin-top: 1rem;
+      font-size: 1.05rem;
+      color: var(--text-soft);
+      font-weight: 400;
+      max-width: 480px;
+      margin-inline: auto;
+      line-height: 1.65;
+    }
+
+    /* ── Countdown ── */
+    .countdown {
+      display: flex;
+      gap: 1.2rem;
+      animation: fadeUp 0.8s 0.35s cubic-bezier(.22,1,.36,1) both;
+    }
+    .cd-block {
+      background: var(--surface);
+      border: 1px solid rgba(168,85,247,0.18);
+      border-radius: 18px;
+      backdrop-filter: blur(18px);
+      padding: 1.1rem 1.4rem;
+      min-width: 76px;
+      text-align: center;
+      box-shadow: 0 4px 32px rgba(99,102,241,0.08), 0 1px 0 rgba(255,255,255,0.8) inset;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .cd-block:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(99,102,241,0.16), 0 1px 0 rgba(255,255,255,0.8) inset;
+    }
+    .cd-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #7c3aed, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .cd-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Email form ── */
+    .notify-form {
+      display: flex;
+      gap: 0.6rem;
+      animation: fadeUp 0.8s 0.45s cubic-bezier(.22,1,.36,1) both;
+    }
+    .notify-form input {
+      border: 1px solid rgba(168,85,247,0.22);
+      background: var(--surface);
+      backdrop-filter: blur(18px);
+      border-radius: 50px;
+      padding: 0.75rem 1.4rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      outline: none;
+      width: 240px;
+      box-shadow: 0 2px 16px rgba(99,102,241,0.06);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .notify-form input::placeholder { color: var(--text-soft); }
+    .notify-form input:focus {
+      border-color: rgba(99,102,241,0.5);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+    }
+    .notify-form button {
+      border: none;
+      cursor: pointer;
+      border-radius: 50px;
+      padding: 0.75rem 1.6rem;
+      background: linear-gradient(135deg, #7c3aed, #6366f1);
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      letter-spacing: 0.02em;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .notify-form button:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 28px rgba(99,102,241,0.45);
+    }
+    .notify-form button:active { transform: scale(0.98); }
+
+    /* ── Social links ── */
+    .socials {
+      display: flex;
+      gap: 0.8rem;
+      animation: fadeUp 0.8s 0.55s cubic-bezier(.22,1,.36,1) both;
+    }
+    .social-btn {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface);
+      border: 1px solid rgba(168,85,247,0.18);
+      backdrop-filter: blur(12px);
+      color: var(--purple-mid);
+      text-decoration: none;
+      font-size: 1rem;
+      transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+    }
+    .social-btn:hover {
+      transform: translateY(-3px) scale(1.08);
+      background: linear-gradient(135deg, #7c3aed, #6366f1);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(99,102,241,0.35);
+      border-color: transparent;
+    }
+
+    /* ── Footer ── */
+    footer {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      z-index: 10;
+      letter-spacing: 0.04em;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Success msg ── */
+    .success-msg {
+      display: none;
+      font-size: 0.85rem;
+      color: #7c3aed;
+      font-weight: 600;
+      animation: fadeUp 0.5s ease both;
+    }
+    .success-msg.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+  <div class="noise"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+
+  <div class="page">
+
+    <div class="logo-wrap">
+      <img src="/mnt/user-data/uploads/logo_color.png" alt="PixelByte logo" class="logo-img"/>
+      <span class="brand">PixelByte</span>
+    </div>
+
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Something awesome is cooking
+    </div>
+
+    <div class="hero-text">
+      <h1>We're <span class="accent">Coming<br/>Soon</span></h1>
+      <p>PixelByte is crafting a digital experience like no other. Stay tuned — we're almost ready to launch.</p>
+    </div>
+
+    <div class="countdown" id="countdown">
+      <div class="cd-block"><div class="cd-num" id="cd-days">00</div><div class="cd-label">Days</div></div>
+      <div class="cd-block"><div class="cd-num" id="cd-hrs">00</div><div class="cd-label">Hours</div></div>
+      <div class="cd-block"><div class="cd-num" id="cd-min">00</div><div class="cd-label">Mins</div></div>
+      <div class="cd-block"><div class="cd-num" id="cd-sec">00</div><div class="cd-label">Secs</div></div>
+    </div>
+
+    <div class="notify-form" id="notify-form">
+      <input type="email" id="email-input" placeholder="your@email.com" />
+      <button onclick="handleNotify()">Notify Me</button>
+    </div>
+    <div class="success-msg" id="success-msg">🎉 You're on the list! We'll reach out soon.</div>
+
+    <div class="socials">
+      <!-- Twitter/X -->
+      <a href="#" class="social-btn" title="Twitter">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.261 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+      <!-- Instagram -->
+      <a href="#" class="social-btn" title="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      </a>
+      <!-- LinkedIn -->
+      <a href="#" class="social-btn" title="LinkedIn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+      <!-- Dribbble -->
+      <a href="#" class="social-btn" title="Dribbble">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308a10.22 10.22 0 004.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.025-8.04 6.4a10.161 10.161 0 006.29 2.166c1.42 0 2.77-.29 4.006-.816zm-11.62-2.073c.232-.4 3.045-5.055 8.332-6.765.135-.045.27-.084.405-.12-.26-.585-.54-1.167-.832-1.74C7.17 12.3 2.265 12.44 1.824 12.44c-.006.13-.01.26-.01.39 0 2.826 1.072 5.405 2.57 7.547zm-2.44-9.138c.444 0 4.717-.044 9.163-1.4a51.883 51.883 0 00-3.977-5.985A10.19 10.19 0 001.945 12.24zm7.463-8.01a59.95 59.95 0 014.008 6.053c3.808-1.43 5.423-3.6 5.615-3.876A10.18 10.18 0 0012 1.824c-.87 0-1.715.112-2.52.316zm9.77 4.237c-.226.314-2.015 2.614-5.988 4.24.25.51.49 1.03.717 1.555.077.185.153.37.228.556 3.41-.43 6.8.26 7.137.332a10.22 10.22 0 00-2.094-6.683z"/></svg>
+      </a>
+    </div>
+
+  </div>
+
+  <footer>© 2025 PixelByte. All rights reserved.</footer>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    /* ─── Countdown ─── */
+    const launch = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000);
+    function tick() {
+      const diff = launch - Date.now();
+      if (diff <= 0) return;
+      document.getElementById('cd-days').textContent = String(Math.floor(diff/86400000)).padStart(2,'0');
+      document.getElementById('cd-hrs').textContent  = String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
+      document.getElementById('cd-min').textContent  = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+      document.getElementById('cd-sec').textContent  = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+    }
+    tick(); setInterval(tick, 1000);
+
+    /* ─── Notify ─── */
+    function handleNotify() {
+      const v = document.getElementById('email-input').value;
+      if (!v.includes('@')) return;
+      document.getElementById('notify-form').style.display = 'none';
+      document.getElementById('success-msg').classList.add('show');
+    }
+
+    /* ─── Three.js 3D Scene ─── */
+    const canvas = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 200);
+    camera.position.set(0, 0, 22);
+
+    /* Lighting */
+    const ambLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambLight);
+    const dirLight = new THREE.DirectionalLight(0xc084fc, 1.2);
+    dirLight.position.set(5, 8, 6);
+    scene.add(dirLight);
+    const pointA = new THREE.PointLight(0x818cf8, 1.6, 60);
+    pointA.position.set(-10, 5, 8);
+    scene.add(pointA);
+    const pointB = new THREE.PointLight(0xe879f9, 1.2, 50);
+    pointB.position.set(12, -6, 4);
+    scene.add(pointB);
+
+    /* Material factory */
+    const mkMat = (color, opacity=0.55) => new THREE.MeshPhysicalMaterial({
+      color, transparent: true, opacity,
+      roughness: 0.15, metalness: 0.05,
+      transmission: 0.4, thickness: 1.2,
+      envMapIntensity: 0.8,
+      side: THREE.DoubleSide,
+    });
+
+    /* Shapes */
+    const shapes = [];
+
+    const addShape = (geo, mat, x, y, z, rx=0, ry=0, rz=0, speed=0.003) => {
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(x, y, z);
+      mesh.rotation.set(rx, ry, rz);
+      mesh.userData.speed = speed;
+      mesh.userData.floatAmp = 0.4 + Math.random()*0.6;
+      mesh.userData.floatOff = Math.random()*Math.PI*2;
+      scene.add(mesh);
+      shapes.push(mesh);
+      return mesh;
+    };
+
+    // Torus knot (hero)
+    addShape(
+      new THREE.TorusKnotGeometry(2.8, 0.7, 160, 18, 2, 3),
+      mkMat(0xa855f7, 0.28), -7, 3.5, -6, 0.4, 0.2, 0, 0.004
+    );
+
+    // Icosahedron
+    addShape(
+      new THREE.IcosahedronGeometry(2.2, 1),
+      mkMat(0x818cf8, 0.32), 7.5, -2.5, -4, 0.3, 0.5, 0, 0.006
+    );
+
+    // Torus
+    addShape(
+      new THREE.TorusGeometry(2, 0.55, 24, 80),
+      mkMat(0xc084fc, 0.30), -8, -4, -5, 1.2, 0.4, 0, 0.005
+    );
+
+    // Octahedron
+    addShape(
+      new THREE.OctahedronGeometry(1.7),
+      mkMat(0x6366f1, 0.40), 9, 5.5, -3, 0.2, 0.3, 0, 0.007
+    );
+
+    // Small sphere cluster
+    [-3, 0, 3].forEach((ox, i) => {
+      addShape(
+        new THREE.SphereGeometry(0.55, 32, 32),
+        mkMat(0xe879f9, 0.45), 2 + ox, 6 + i*0.3, -2, 0, 0, 0, 0.008 + i*0.002
+      );
+    });
+
+    // Small icosahedra scattered
+    [[10, 6, -8], [10, -6, -7], [-11, -5, -9]].forEach(([x,y,z], i) => {
+      addShape(
+        new THREE.IcosahedronGeometry(1.0, 0),
+        mkMat(0x7c3aed, 0.38), x, y, z, 0, 0, 0, 0.009 + i*0.001
+      );
+    });
+
+    // Wire overlay torus
+    const wireMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, wireframe: true, opacity: 0.09, transparent: true });
+    addShape(new THREE.TorusGeometry(3.8, 0.1, 8, 60), wireMat, 6, 4, -9, 0.6, 0, 0, 0.002);
+
+    // Floating ring
+    addShape(
+      new THREE.TorusGeometry(1.2, 0.12, 12, 60),
+      mkMat(0xc084fc, 0.5), -5, 5, -3, 0.8, 0.3, 0, 0.008
+    );
+
+    /* Mouse parallax */
+    let mx = 0, my = 0;
+    document.addEventListener('mousemove', e => {
+      mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+      my = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    /* Render loop */
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      shapes.forEach((m, i) => {
+        m.rotation.x += m.userData.speed * 0.7;
+        m.rotation.y += m.userData.speed;
+        m.position.y += Math.sin(t + m.userData.floatOff) * 0.003 * m.userData.floatAmp;
+      });
+      camera.position.x += (mx * 1.2 - camera.position.x) * 0.04;
+      camera.position.y += (-my * 0.8 - camera.position.y) * 0.04;
+      camera.lookAt(0, 0, 0);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
