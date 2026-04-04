@@ -1,7 +1,5 @@
 # Course Enrollment System
 
-A full-stack web application for managing course enrollments with a modern, responsive UI and a Flask backend API.
-
 ## Features
 
 ✨ **Student Management** - Register and manage student profiles
@@ -206,14 +204,4 @@ The Flask backend runs in debug mode by default:
 - Email notifications
 - Admin dashboard for course management
 
-## License
 
-Open source - feel free to modify and use
-
-## Contact & Support
-
-For questions or issues, review the code comments or check the API documentation above.
-
----
-
-**Happy Learning!** 🚀
