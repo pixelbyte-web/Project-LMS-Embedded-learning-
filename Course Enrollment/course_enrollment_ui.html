@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IoT Learning Platform</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple: #667eea;
+      --purple-d: #4f5fc4;
+      --green: #22c55e;
+      --green-bg: #dcfce7;
+      --green-txt: #15803d;
+      --amber: #f59e0b;
+      --amber-bg: #fef3c7;
+      --amber-txt: #92400e;
+      --red: #ef4444;
+      --red-bg: #fee2e2;
+      --red-txt: #991b1b;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --radius: 12px;
+      --shadow: 0 2px 16px rgba(0,0,0,0.09);
+    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f8; color: var(--gray-900); min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff; padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .nav-brand { font-size: 1.1rem; font-weight: 700; letter-spacing: -.01em; }
+    .nav-brand span { opacity: .7; font-weight: 400; font-size: .85rem; margin-left: 8px; }
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      padding: 6px 16px; border-radius: 8px; font-size: .875rem; font-weight: 500;
+      cursor: pointer; background: rgba(255,255,255,0); border: none; color: rgba(255,255,255,.75);
+      transition: background .15s, color .15s;
+    }
+    .nav-tab.active, .nav-tab:hover { background: rgba(255,255,255,.18); color: #fff; }
+    .nav-student {
+      font-size: .8rem; background: rgba(255,255,255,.2); padding: 5px 12px;
+      border-radius: 20px; display: flex; align-items: center; gap: 6px;
+    }
+    .nav-student select {
+      background: transparent; border: none; color: #fff; font-size: .8rem;
+      cursor: pointer; outline: none; max-width: 160px;
+    }
+    .nav-student select option { color: var(--gray-900); background: #fff; }
+
+    /* ── PAGES ── */
+    .page { display: none; }
+    .page.active { display: block; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 28px 20px; }
+
+    /* ── CATALOG ── */
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--gray-900); }
+    .page-header p { color: var(--gray-500); font-size: .9rem; margin-top: 4px; }
+
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-bar input, .filter-bar select {
+      padding: 9px 14px; border: 1.5px solid var(--gray-200);
+      border-radius: 8px; font-size: .875rem; background: #fff;
+      color: var(--gray-900); outline: none; transition: border-color .2s;
+    }
+    .filter-bar input { flex: 1; min-width: 200px; }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: var(--purple); }
+
+    .path-banner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px;
+      color: #fff; display: flex; align-items: center; gap: 16px;
+    }
+    .path-banner-icon { font-size: 2rem; flex-shrink: 0; }
+    .path-banner h2 { font-size: 1.05rem; font-weight: 600; }
+    .path-banner p { font-size: .82rem; opacity: .85; margin-top: 3px; }
+    .path-steps { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .path-step {
+      background: rgba(255,255,255,.22); border-radius: 20px;
+      padding: 3px 10px; font-size: .75rem; font-weight: 500;
+    }
+    .path-step::before { content: attr(data-n) ". "; }
+
+    .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px; }
+
+    .course-card {
+      background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
+      overflow: hidden; display: flex; flex-direction: column;
+      transition: transform .2s, box-shadow .2s; cursor: default;
+    }
+    .course-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.13); }
+
+    .card-header {
+      padding: 16px 18px 12px;
+      background: linear-gradient(135deg, var(--purple) 0%, #764ba2 100%);
+      color: #fff;
+    }
+    .card-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .level-badge {
+      font-size: .72rem; font-weight: 600; padding: 2px 9px;
+      border-radius: 20px; background: rgba(255,255,255,.22);
+    }
+    .step-num {
+      font-size: .72rem; font-weight: 700; padding: 2px 9px;
+      border-radius: 20px; background: rgba(255,255,255,.15);
+    }
+    .card-title { font-size: 1rem; font-weight: 700; line-height: 1.35; }
+    .card-hours { font-size: .75rem; opacity: .8; margin-top: 5px; }
+
+    .card-body { padding: 14px 18px; flex: 1; }
+    .card-desc { font-size: .84rem; color: var(--gray-500); line-height: 1.65; }
+
+    .card-footer {
+      padding: 12px 18px; border-top: 1px solid var(--gray-100);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .enroll-status { font-size: .8rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    .enroll-status.enrolled { color: var(--green-txt); }
+    .enroll-status.open { color: var(--gray-400); }
+
+    .btn {
+      padding: 7px 16px; font-size: .82rem; font-weight: 600;
+      border-radius: 8px; border: none; cursor: pointer; transition: all .15s;
+    }
+    .btn-enroll { background: var(--purple); color: #fff; }
+    .btn-enroll:hover { background: var(--purple-d); }
+    .btn-open { background: var(--purple); color: #fff; }
+    .btn-open:hover { background: var(--purple-d); }
+    .btn-unenroll { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+    .btn-unenroll:hover { background: var(--red-bg); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── STUDENT PANEL ── */
+    .panel-grid { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
+
+    .enrolled-list { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .enrolled-list-header { padding: 14px 18px; border-bottom: 1px solid var(--gray-100); }
+    .enrolled-list-header h3 { font-size: .9rem; font-weight: 600; }
+
+    .enrolled-item {
+      padding: 14px 18px; border-bottom: 1px solid var(--gray-100);
+      cursor: pointer; transition: background .15s;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .enrolled-item:last-child { border-bottom: none; }
+    .enrolled-item:hover, .enrolled-item.active { background: var(--gray-50); }
+    .enrolled-item.active { border-left: 3px solid var(--purple); padding-left: 15px; }
+    .enrolled-item-title { font-size: .875rem; font-weight: 600; color: var(--gray-900); }
+    .enrolled-item-meta { font-size: .76rem; color: var(--gray-400); }
+    .progress-bar-wrap { height: 5px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width .3s; }
+
+    /* ── LESSON VIEWER ── */
+    .lesson-viewer { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .viewer-header { padding: 18px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 14px; }
+    .viewer-header-info { flex: 1; }
+    .viewer-course-title { font-size: .78rem; color: var(--purple); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .viewer-lesson-title { font-size: 1.1rem; font-weight: 700; color: var(--gray-900); margin-top: 2px; }
+    .viewer-badge {
+      font-size: .72rem; font-weight: 600; padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .badge-reading { background: var(--amber-bg); color: var(--amber-txt); }
+    .badge-lab { background: #e0f2fe; color: #0369a1; }
+    .badge-project { background: #f3e8ff; color: #7c3aed; }
+
+    .viewer-body { padding: 28px 32px; min-height: 300px; max-height: 60vh; overflow-y: auto; }
+    .lesson-content { font-size: .92rem; line-height: 1.85; color: var(--gray-700); white-space: pre-wrap; }
+
+    .viewer-footer {
+      padding: 14px 24px; border-top: 1px solid var(--gray-100);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .complete-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 18px; border-radius: 8px; font-size: .85rem; font-weight: 600;
+      border: none; cursor: pointer; transition: all .15s;
+    }
+    .complete-btn.done { background: var(--green-bg); color: var(--green-txt); }
+    .complete-btn.undone { background: var(--gray-100); color: var(--gray-500); }
+    .complete-btn:hover { filter: brightness(.95); }
+
+    .nav-btns { display: flex; gap: 8px; }
+    .nav-btn {
+      padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--gray-200);
+      background: #fff; font-size: .82rem; font-weight: 600; cursor: pointer;
+      color: var(--gray-700); transition: all .15s;
+    }
+    .nav-btn:hover:not(:disabled) { border-color: var(--purple); color: var(--purple); }
+    .nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* Sidebar lesson list */
+    .section-group { border-bottom: 1px solid var(--gray-100); }
+    .section-label { padding: 10px 18px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--gray-400); background: var(--gray-50); }
+    .lesson-item {
+      padding: 11px 18px; display: flex; align-items: center; gap: 10px;
+      cursor: pointer; border-bottom: 1px solid var(--gray-100); transition: background .12s;
+      font-size: .84rem; color: var(--gray-700);
+    }
+    .lesson-item:last-child { border-bottom: none; }
+    .lesson-item:hover { background: var(--gray-50); }
+    .lesson-item.active { background: #ede9fe; color: var(--purple); font-weight: 600; }
+    .lesson-item .check {
+      width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--gray-200);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700;
+    }
+    .lesson-item .check.done { background: var(--green); border-color: var(--green); color: #fff; }
+
+    .viewer-layout { display: grid; grid-template-columns: 240px 1fr; gap: 0; }
+    .lesson-sidebar { border-right: 1px solid var(--gray-100); max-height: 70vh; overflow-y: auto; }
+
+    /* ── Empty states ── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--gray-400); }
+    .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+
+    /* ── Stats row ── */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat { background: #fff; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
+    .stat-n { font-size: 1.9rem; font-weight: 700; color: var(--purple); }
+    .stat-l { font-size: .78rem; color: var(--gray-400); margin-top: 2px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; max-width: 320px;
+      background: var(--gray-900); color: #fff; border-radius: 10px;
+      padding: 12px 18px; font-size: .875rem; font-weight: 500;
+      transform: translateX(120%); transition: transform .3s; z-index: 999;
+    }
+    .toast.show { transform: translateX(0); }
+
+    @media(max-width:900px) {
+      .panel-grid { grid-template-columns: 1fr; }
+      .viewer-layout { grid-template-columns: 1fr; }
+      .lesson-sidebar { max-height: 200px; border-right: none; border-bottom: 1px solid var(--gray-100); }
+      .stats { grid-template-columns: repeat(2,1fr); }
+    }
+    @media(max-width:600px) {
+      nav { padding: 0 16px; }
+      .container { padding: 16px; }
+      .course-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">&#128301; IoT Learning Path <span>by EduSystem</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('catalog')">Catalog</button>
+    <button class="nav-tab" onclick="showPage('panel')">My Learning</button>
+  </div>
+  <div class="nav-student">
+    &#128100;
+    <select id="student-sel" onchange="onStudentChange()">
+      <option value="">Select student…</option>
+    </select>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     PAGE: CATALOG
+══════════════════════════════════════════════ -->
+<div class="page active" id="page-catalog">
+  <div class="container">
+
+    <div class="path-banner">
+      <div class="path-banner-icon">&#9889;</div>
+      <div>
+        <h2>IoT Engineering Learning Path</h2>
+        <p>A structured journey from electronics fundamentals to cloud-connected IoT applications.</p>
+        <div class="path-steps">
+          <span class="path-step" data-n="1">Electronics & Circuits</span>
+          <span class="path-step" data-n="2">Intro to MCUs</span>
+          <span class="path-step" data-n="3">Arduino</span>
+          <span class="path-step" data-n="4">Raspberry Pi</span>
+          <span class="path-step" data-n="5">ESP32 IoT</span>
+          <span class="path-step" data-n="6">Sensors & Actuators</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="s-courses">6</div><div class="stat-l">Courses</div></div>
+      <div class="stat"><div class="stat-n" id="s-lessons">28</div><div class="stat-l">Total lessons</div></div>
+      <div class="stat"><div class="stat-n" id="s-enrolled">—</div><div class="stat-l">Your enrollments</div></div>
+      <div class="stat"><div class="stat-n" id="s-hours">72</div><div class="stat-l">Hours of content</div></div>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" id="search" placeholder="Search courses…" oninput="renderCatalog()"/>
+      <select id="filter-level" onchange="renderCatalog()">
+        <option value="">All levels</option>
+        <option>Beginner</option>
+        <option>Intermediate</option>
+        <option>Advanced</option>
+      </select>
+      <select id="filter-enroll" onchange="renderCatalog()">
+        <option value="all">All courses</option>
+        <option value="enrolled">Enrolled</option>
+        <option value="available">Not enrolled</option>
+      </select>
+    </div>
+
+    <div class="course-grid" id="catalog-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE: STUDENT PANEL
+══════════════════════════════════════════════ -->
+<div class="page" id="page-panel">
+  <div class="container">
+    <div class="page-header">
+      <h1>My Learning</h1>
+      <p id="panel-subtitle">Select a student to view enrolled courses and access lessons.</p>
+    </div>
+    <div id="panel-content">
+      <div class="empty"><span class="empty-icon">&#127891;</span>Select a student from the top bar to get started.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+// DATA (mirrors the database — used offline)
+// In production, replace fetch() calls to use API_BASE_URL
+// ════════════════════════════════════════════
+const API = 'http://localhost:5000';
+const USE_API = true; // set true when Flask is running
+
+const STUDENTS = [
+  {id:1, first_name:'Alice', last_name:'Johnson', email:'alice.j@student.edu'},
+  {id:2, first_name:'Bob',   last_name:'Miller',  email:'bob.m@student.edu'},
+  {id:3, first_name:'Carol', last_name:'White',   email:'carol.w@student.edu'},
+  {id:4, first_name:'David', last_name:'Taylor',  email:'david.t@student.edu'},
+  {id:5, first_name:'Emma',  last_name:'Brown',   email:'emma.b@student.edu'},
+];
+
+const COURSES = [
+  {id:1,title:'Electronics & Circuits',description:'Master the building blocks of all electronic systems. Learn voltage, current, resistance, Ohms Law, and how to build and read basic circuits on a breadboard.',level:'Beginner',duration_hours:8,total_lessons:5},
+  {id:2,title:'Introduction to MCUs',description:'Understand what microcontrollers are, how they differ from general-purpose computers, and how they power embedded systems. Covers architecture, memory, GPIO, and timing.',level:'Beginner',duration_hours:10,total_lessons:5},
+  {id:3,title:'Arduino Programming',description:'Hands-on embedded programming using the Arduino platform and C/C++. Build real projects: LED control, button input, serial communication, PWM, and I2C peripherals.',level:'Intermediate',duration_hours:14,total_lessons:5},
+  {id:4,title:'Raspberry Pi Fundamentals',description:'Set up and use a Raspberry Pi running Linux. Learn GPIO programming with Python, run services, connect peripherals, and use the Pi as an IoT gateway.',level:'Intermediate',duration_hours:12,total_lessons:4},
+  {id:5,title:'ESP32 / ESP8266 IoT Applications',description:'Program the ESP32 and ESP8266 Wi-Fi modules to build connected IoT devices. Covers Wi-Fi, Bluetooth, MQTT, deep-sleep, and cloud integration.',level:'Advanced',duration_hours:16,total_lessons:4},
+  {id:6,title:'Sensors & Actuators',description:'Integrate the physical world into your IoT projects. Learn to wire and program temperature, humidity, motion, ultrasonic sensors, plus control motors and relays.',level:'Advanced',duration_hours:12,total_lessons:5},
+];
+
+const CONTENT = {
+  1:[
+    {id:101,section_title:'Foundations',lesson_order:1,lesson_title:'What is Electricity?',lesson_type:'reading',lesson_body:'Electricity is the flow of electric charge through a conductor.\n\nKey Concepts:\n- Charge (Q): Measured in Coulombs.\n- Current (I): Rate of charge flow, measured in Amperes (A). 1A = 1 Coulomb/second.\n- Voltage (V): Electrical potential difference that drives current.\n- Resistance (R): Opposition to current flow, measured in Ohms.\n\nOhms Law: V = I x R\n\nThis equation governs most basic circuit analysis. Know any two values and you can calculate the third.'},
+    {id:102,section_title:'Foundations',lesson_order:2,lesson_title:'Basic Circuit Components',lesson_type:'reading',lesson_body:'Every circuit is built from a small set of fundamental components.\n\nResistors limit current flow. A 220 ohm resistor is commonly used with LEDs.\n\nCapacitors store energy in an electric field. Used for filtering and timing circuits.\n\nDiodes allow current to flow in only one direction. LEDs emit light when forward biased.\n\nTransistors act as electronic switches or amplifiers. The BJT and MOSFET are the two main types.\n\nPractical Tip: Always check component polarity before connecting to power. Reversed polarity can destroy components instantly.'},
+    {id:103,section_title:'Foundations',lesson_order:3,lesson_title:'Reading Schematics',lesson_type:'reading',lesson_body:'A schematic is a diagram that uses standard symbols to represent electronic circuits.\n\nCommon Symbols:\n- Battery: Two parallel lines (long = positive, short = negative)\n- Resistor: Zigzag line (US) or rectangle (EU)\n- Capacitor: Two parallel lines\n- Ground (GND): Triangle pointing down\n- LED: Diode symbol with arrows pointing away\n\nReading a circuit: Follow the path from the positive terminal through components back to GND. Current flows in a complete loop.'},
+    {id:104,section_title:'Breadboards & Prototyping',lesson_order:4,lesson_title:'Using a Breadboard',lesson_type:'lab',lesson_body:'A breadboard lets you build circuits without soldering.\n\nHow Breadboards Work:\n- The long rows (+ and -) are power rails -- all holes in each rail are connected.\n- Inner columns are connected in groups of 5 holes.\n- Insert component legs into the same row to connect them.\n\nYour First Circuit: LED with Resistor\n1. Connect 5V to + rail, GND to - rail.\n2. Place a 220 ohm resistor from + rail to row 10.\n3. Place LED with longer leg (anode) in row 10, shorter leg (cathode) in row 11.\n4. Connect row 11 to - rail.\n5. Apply power -- LED lights up.'},
+    {id:105,section_title:'Breadboards & Prototyping',lesson_order:5,lesson_title:'Measuring with a Multimeter',lesson_type:'lab',lesson_body:'A multimeter is your primary diagnostic tool.\n\nKey Modes:\n- DC Voltage: Red probe to positive, black to GND.\n- Resistance: Measure with power OFF.\n- Continuity: A beep means connected.\n- DC Current: Meter must be placed IN SERIES with the circuit.\n\nSafety Rules:\n1. Never measure resistance in a powered circuit.\n2. Start on the highest range and work down.\n3. Check probe connections before switching modes.'},
+  ],
+  2:[
+    {id:201,section_title:'MCU Basics',lesson_order:1,lesson_title:'What is a Microcontroller?',lesson_type:'reading',lesson_body:'A microcontroller (MCU) is a compact integrated circuit containing a processor, memory, and I/O peripherals on a single chip.\n\nMCU vs Microprocessor vs Computer:\n- MCU: On-chip RAM (KB), on-chip Flash, GPIO/PWM/ADC built in, no OS required.\n- Microprocessor: External GB RAM, limited I/O, usually needs an OS.\n- Computer: Full OS, external storage, general purpose.\n\nMCUs run one dedicated program (firmware) that controls a specific device.\n\nPopular MCU Families: AVR (Arduino), ARM Cortex-M (STM32), Xtensa (ESP32), PIC.'},
+    {id:202,section_title:'MCU Basics',lesson_order:2,lesson_title:'GPIO -- General Purpose Input/Output',lesson_type:'reading',lesson_body:'GPIO pins are the MCUs connection to the physical world.\n\nOutput Mode: Drive pin HIGH (3.3V or 5V) or LOW (0V) to control LEDs, relays.\n\nInput Mode: Read HIGH or LOW voltage applied to pin.\n- Pull-up resistor: Pin reads HIGH by default, LOW when connected to GND.\n- Pull-down resistor: Pin reads LOW by default.\n\nKey Parameters:\n- Logic Level: Most modern MCUs use 3.3V. Arduino Uno uses 5V. Never connect 5V to 3.3V MCU pins without a level shifter.\n- Drive Current: Each GPIO typically sources/sinks 8-40mA.'},
+    {id:203,section_title:'MCU Basics',lesson_order:3,lesson_title:'Memory Types in MCUs',lesson_type:'reading',lesson_body:'MCUs have several types of memory, each with a different purpose.\n\nFlash (Program Memory): Non-volatile. Stores your firmware. Survives power loss. Typical: 32KB-4MB.\n\nSRAM (Data Memory): Volatile RAM for variables and call stack. Lost on power off. Typical: 2KB-512KB.\n\nEEPROM: Non-volatile, for configuration data that changes occasionally. Slower to write than SRAM.\n\nTip: A common mistake is running out of SRAM, not Flash. Store constant strings in Flash using the F() macro on AVR Arduinos: Serial.println(F("Hello"));'},
+    {id:204,section_title:'Peripherals',lesson_order:4,lesson_title:'Timers and PWM',lesson_type:'reading',lesson_body:'Timers are hardware counters inside the MCU that run independently of the CPU.\n\nUsed for:\n- Generating precise delays without blocking the CPU\n- Measuring time between events\n- Generating PWM signals\n\nPWM -- Pulse Width Modulation:\nPWM rapidly switches a digital pin ON and OFF. The ratio of ON time to total period is the duty cycle.\n- 0% duty cycle: pin always LOW, LED fully off\n- 50% duty cycle: LED at half brightness\n- 100% duty cycle: LED fully on\n\nSwitching faster than the eye can perceive (490Hz-20kHz) creates an average brightness. PWM also controls motor speed.'},
+    {id:205,section_title:'Peripherals',lesson_order:5,lesson_title:'ADC -- Reading Analog Signals',lesson_type:'reading',lesson_body:'The ADC converts a continuous analog voltage into a digital number.\n\nResolution: A 10-bit ADC produces 0-1023. A 12-bit ADC produces 0-4095.\n\nReference Voltage (VREF): The voltage that maps to the maximum ADC reading.\n\nExample (VREF=3.3V, 12-bit):\n- 0V input -> ADC reads 0\n- 3.3V input -> ADC reads 4095\n- 1.65V input -> ADC reads ~2047\n\nFormula: Voltage = (ADC_value / max_value) x VREF\n\nPractical Notes:\n- ADC pins cannot tolerate voltages above VREF.\n- Average multiple readings for better accuracy.'},
+  ],
+  3:[
+    {id:301,section_title:'Getting Started',lesson_order:1,lesson_title:'The Arduino Ecosystem',lesson_type:'reading',lesson_body:'Arduino is an open-source electronics platform combining easy-to-use hardware and software.\n\nKey Boards:\n- Uno R3: ATmega328P, 5V, 14 digital pins, 6 analog inputs, 32KB Flash, 2KB SRAM.\n- Nano: Compact Uno-compatible.\n- Mega 2560: More pins and memory for complex projects.\n- Leonardo: Built-in USB HID -- can act as keyboard or mouse.\n\nSketch Structure:\nvoid setup() {\n  // Runs once at startup\n}\nvoid loop() {\n  // Runs forever after setup\n}'},
+    {id:302,section_title:'Getting Started',lesson_order:2,lesson_title:'Digital I/O and Blink',lesson_type:'lab',lesson_body:'Your first Arduino program: blink an LED.\n\nPin Modes:\n  pinMode(13, OUTPUT);\n  pinMode(2, INPUT_PULLUP);\n\nWriting and Reading:\n  digitalWrite(13, HIGH); // LED on\n  delay(1000);\n  digitalWrite(13, LOW);  // LED off\n  delay(1000);\n  int state = digitalRead(2); // Read button (LOW = pressed with pull-up)\n\nChallenge: Modify the sketch so the LED blinks faster when a button is held down.'},
+    {id:303,section_title:'Communication',lesson_order:3,lesson_title:'Serial Communication',lesson_type:'lab',lesson_body:'Serial lets your Arduino send and receive data over USB -- essential for debugging.\n\n  Serial.begin(9600);\n  Serial.println("Arduino ready!");\n\n  int val = analogRead(A0);\n  Serial.print("Sensor: ");\n  Serial.println(val);\n\n  if (Serial.available() > 0) {\n    char cmd = Serial.read();\n    if (cmd == H) digitalWrite(13, HIGH);\n    if (cmd == L) digitalWrite(13, LOW);\n  }\n\nOpen Serial Monitor (Ctrl+Shift+M), set baud to 9600.'},
+    {id:304,section_title:'Communication',lesson_order:4,lesson_title:'I2C Protocol',lesson_type:'lab',lesson_body:'I2C is a two-wire protocol (SDA + SCL) for connecting multiple devices.\n\nKey Facts:\n- Up to 127 devices on the same two wires\n- Each device has a unique 7-bit address\n- Arduino Uno: SDA = A4, SCL = A5\n\nBMP280 pressure sensor example:\n  #include <Wire.h>\n  #include <Adafruit_BMP280.h>\n  Adafruit_BMP280 bmp;\n  if (!bmp.begin(0x76)) { /* error */ }\n  float temp = bmp.readTemperature();\n  Serial.println(temp);'},
+    {id:305,section_title:'Projects',lesson_order:5,lesson_title:'Capstone: Weather Station',lesson_type:'project',lesson_body:'Build a weather station: read temperature and humidity, display on LCD, log over Serial.\n\nComponents:\n- Arduino Uno\n- DHT22 temperature/humidity sensor\n- 16x2 I2C LCD display\n- 10k ohm resistor, breadboard, wires\n\nWiring:\n- DHT22: VCC->5V, GND->GND, DATA->pin 7, 10k pull-up on DATA\n- LCD: SDA->A4, SCL->A5, VCC->5V, GND->GND\n\nGoals:\n1. Display temperature on LCD line 1\n2. Display humidity on LCD line 2\n3. Log values over Serial every 5 seconds\n4. Extension: Flash LED if temperature exceeds 30 degrees'},
+  ],
+  4:[
+    {id:401,section_title:'Setup & Linux',lesson_order:1,lesson_title:'Setting Up Your Raspberry Pi',lesson_type:'lab',lesson_body:'The Raspberry Pi is a full Linux computer on a credit-card-sized board.\n\nSetup Steps:\n1. Download Raspberry Pi Imager from raspberrypi.com\n2. Flash Raspberry Pi OS (64-bit) to a microSD card (16GB+)\n3. In Imager settings: set hostname, username, password, enable SSH, configure Wi-Fi\n4. Insert SD card, connect HDMI and power\n5. SSH in: ssh pi@raspberrypi.local\n\nFirst Commands:\n  sudo apt update && sudo apt upgrade -y\n  raspi-config\n  df -h\n  free -h'},
+    {id:402,section_title:'Setup & Linux',lesson_order:2,lesson_title:'Essential Linux Commands',lesson_type:'reading',lesson_body:'The Raspberry Pi runs Linux. You control it through the terminal.\n\nNavigation:\n  pwd           -- Print current directory\n  ls -la        -- List files including hidden\n  cd /home/pi   -- Change directory\n  mkdir myproject\n\nFiles:\n  cp file.txt backup.txt\n  mv file.txt new_name.txt\n  rm file.txt\n  nano file.txt  -- Edit with nano\n  cat file.txt   -- Print contents\n\nSystem:\n  sudo command   -- Run as admin\n  ps aux         -- List processes\n  kill PID\n  systemctl status ssh\n  reboot'},
+    {id:403,section_title:'GPIO with Python',lesson_order:3,lesson_title:'GPIO Control with Python',lesson_type:'lab',lesson_body:'Use Python and the RPi.GPIO library to control the 40-pin GPIO header.\n\n  import RPi.GPIO as GPIO\n  import time\n\n  LED_PIN = 18\n  GPIO.setmode(GPIO.BCM)       # BCM pin numbering\n  GPIO.setup(LED_PIN, GPIO.OUT)\n\n  try:\n    while True:\n      GPIO.output(LED_PIN, GPIO.HIGH)\n      time.sleep(1)\n      GPIO.output(LED_PIN, GPIO.LOW)\n      time.sleep(1)\n  except KeyboardInterrupt:\n    pass\n  finally:\n    GPIO.cleanup()  # Always reset pins on exit\n\nWarning: Raspberry Pi GPIO is 3.3V only.'},
+    {id:404,section_title:'Services & Networking',lesson_order:4,lesson_title:'Running Scripts as Services',lesson_type:'lab',lesson_body:'A systemd service starts your Python script automatically on boot.\n\nCreate /etc/systemd/system/myapp.service:\n\n  [Unit]\n  Description=My IoT App\n  After=network.target\n\n  [Service]\n  ExecStart=/usr/bin/python3 /home/pi/myapp/main.py\n  WorkingDirectory=/home/pi/myapp\n  Restart=always\n  User=pi\n\n  [Install]\n  WantedBy=multi-user.target\n\nCommands:\n  sudo systemctl daemon-reload\n  sudo systemctl enable myapp\n  sudo systemctl start myapp\n  sudo systemctl status myapp'},
+  ],
+  5:[
+    {id:501,section_title:'ESP32 Basics',lesson_order:1,lesson_title:'Introduction to ESP32',lesson_type:'reading',lesson_body:'The ESP32 is a powerful, low-cost Wi-Fi + Bluetooth microcontroller by Espressif Systems.\n\nKey Features:\n- Dual-core 240MHz Xtensa LX6 processor\n- 520KB SRAM, up to 4MB Flash\n- Wi-Fi 802.11 b/g/n (2.4GHz)\n- Bluetooth 4.2 + BLE\n- 34 GPIO pins, 18x ADC, 2x DAC\n- Hardware encryption (AES, SHA, RSA)\n- Ultra-low-power deep-sleep modes\n\nvs ESP8266: Single core, less RAM, no Bluetooth, fewer GPIOs. Still useful for simple Wi-Fi projects.\n\nDevelopment Options: Arduino IDE, MicroPython, ESP-IDF, PlatformIO.'},
+    {id:502,section_title:'Wi-Fi & Networking',lesson_order:2,lesson_title:'Connecting to Wi-Fi',lesson_type:'lab',lesson_body:'Connecting the ESP32 to Wi-Fi:\n\n  #include <WiFi.h>\n  const char* ssid = "YourNetwork";\n  const char* password = "YourPassword";\n\n  void setup() {\n    Serial.begin(115200);\n    WiFi.begin(ssid, password);\n    while (WiFi.status() != WL_CONNECTED) {\n      delay(500);\n      Serial.print(".");\n    }\n    Serial.println(WiFi.localIP());\n  }\n\n  void loop() {\n    if (WiFi.status() != WL_CONNECTED) {\n      WiFi.reconnect();\n    }\n  }\n\nTip: Store credentials in config.h, add to .gitignore -- never commit passwords.'},
+    {id:503,section_title:'MQTT & Cloud',lesson_order:3,lesson_title:'MQTT Protocol for IoT',lesson_type:'reading',lesson_body:'MQTT is the standard lightweight publish/subscribe messaging protocol for IoT.\n\nConcepts:\n- Broker: Central server (e.g. Mosquitto, HiveMQ, AWS IoT Core)\n- Topic: Hierarchical channel e.g. home/livingroom/temperature\n- Publish: Device sends data to a topic\n- Subscribe: Device listens for messages on a topic\n\nESP32 with PubSubClient library:\n  #include <PubSubClient.h>\n  WiFiClient espClient;\n  PubSubClient client(espClient);\n  client.setServer("broker.hivemq.com", 1883);\n  client.connect("ESP32_Device");\n  client.subscribe("home/commands");\n  client.publish("home/temperature", "24.5");\n  client.loop(); // must call in loop()'},
+    {id:504,section_title:'Power & Sleep',lesson_order:4,lesson_title:'Deep Sleep and Power Optimisation',lesson_type:'lab',lesson_body:'Deep sleep reduces ESP32 current from ~240mA to as low as 10 microamps.\n\nDeep Sleep Pattern:\n  #include <esp_sleep.h>\n\n  void setup() {\n    Serial.begin(115200);\n    // Do your work: read sensor, send data\n    doWork();\n    // Sleep for 30 seconds\n    esp_sleep_enable_timer_wakeup(30 * 1000000ULL);\n    Serial.flush();\n    esp_deep_sleep_start();\n    // Code below never runs -- chip resets on wake\n  }\n\nPower Tips:\n- Disable Wi-Fi: WiFi.mode(WIFI_OFF)\n- Reduce CPU speed: setCpuFrequencyMhz(80)\n- Use external low-power sensors'},
+  ],
+  6:[
+    {id:601,section_title:'Environmental Sensors',lesson_order:1,lesson_title:'Temperature & Humidity: DHT22',lesson_type:'lab',lesson_body:'The DHT22 is a popular digital temperature and humidity sensor.\n\nSpecifications:\n- Temperature: -40C to +80C, accuracy +-0.5C\n- Humidity: 0-100% RH, accuracy +-2-5%\n- Sampling rate: Once every 2 seconds\n\nWiring:\n  Pin 1 (VCC) -> 3.3V or 5V\n  Pin 2 (DATA) -> MCU GPIO + 10k pull-up to VCC\n  Pin 4 (GND) -> GND\n\nArduino code:\n  #include <DHT.h>\n  DHT dht(7, DHT22);\n  dht.begin();\n  float t = dht.readTemperature();\n  float h = dht.readHumidity();\n  if (!isnan(t)) Serial.println(t);'},
+    {id:602,section_title:'Environmental Sensors',lesson_order:2,lesson_title:'Distance: HC-SR04 Ultrasonic',lesson_type:'lab',lesson_body:'The HC-SR04 measures distance using 40kHz ultrasonic pulses.\n\nSpecifications:\n- Range: 2cm - 400cm, Accuracy: +-3mm\n- Voltage: 5V\n\nPhysics: Sound = 343 m/s. Distance = (time x 343) / 2\n\nArduino code:\n  pinMode(TRIG_PIN, OUTPUT);\n  pinMode(ECHO_PIN, INPUT);\n  // Trigger pulse\n  digitalWrite(TRIG_PIN, LOW); delayMicroseconds(2);\n  digitalWrite(TRIG_PIN, HIGH); delayMicroseconds(10);\n  digitalWrite(TRIG_PIN, LOW);\n  // Measure\n  long duration = pulseIn(ECHO_PIN, HIGH);\n  float distance = (duration * 0.0343) / 2.0;\n  Serial.println(distance);'},
+    {id:603,section_title:'Motion & Presence',lesson_order:3,lesson_title:'PIR Motion Sensor',lesson_type:'lab',lesson_body:'A PIR (Passive InfraRed) sensor detects warm moving bodies.\n\nHC-SR501 Features:\n- Adjustable sensitivity and hold time\n- Single or repeated trigger mode\n- Voltage: 5V-20V, Output: 3.3V or 5V digital\n- Needs ~30s calibration on power-up\n\nArduino code:\n  pinMode(PIR_PIN, INPUT);\n  delay(30000); // warm-up period\n\n  void loop() {\n    if (digitalRead(PIR_PIN) == HIGH) {\n      Serial.println("Motion detected!");\n      delay(100);\n    }\n  }'},
+    {id:604,section_title:'Actuators',lesson_order:4,lesson_title:'Controlling DC Motors with L298N',lesson_type:'lab',lesson_body:'The L298N dual H-bridge motor driver lets an MCU safely control DC motors.\n\nWhy a driver? DC motors draw 200mA-2A+, far more than any GPIO pin (max ~40mA).\n\nConnections:\n  IN1, IN2 -> Arduino digital pins (direction)\n  ENA      -> Arduino PWM pin (speed)\n  OUT1, OUT2 -> Motor terminals\n  12V -> Motor power supply\n  GND -> Common ground\n\nCode:\n  void setMotor(int speed, bool forward) {\n    analogWrite(ENA, speed); // 0-255\n    digitalWrite(IN1, forward ? HIGH : LOW);\n    digitalWrite(IN2, forward ? LOW : HIGH);\n  }\n  setMotor(200, true);  // Forward, 78% speed\n  setMotor(0, true);    // Stop'},
+    {id:605,section_title:'Actuators',lesson_order:5,lesson_title:'Relay Module for Mains Control',lesson_type:'lab',lesson_body:'A relay is an electrically operated switch for controlling high-power AC circuits.\n\nSafety Warning: Mains voltage (110V/230V AC) is lethal. Only work with mains wiring if qualified.\n\n5V Relay Module:\n- Control: VCC (5V), GND, IN (signal from MCU)\n- Switched: COM, NO (Normally Open), NC (Normally Closed)\n- Optocoupler isolation protects the MCU\n- Most modules are active-LOW (relay ON when IN = LOW)\n\nCode:\n  pinMode(RELAY_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, HIGH); // OFF\n  delay(5000);\n  digitalWrite(RELAY_PIN, LOW);  // ON\n  delay(5000);\n  digitalWrite(RELAY_PIN, HIGH); // OFF'},
+  ],
+};
+
+const INIT_ENROLLMENTS = {1:[1,2],2:[1,3],3:[2,4],4:[1],5:[5]};
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let currentStudent = null;
+let enrollments    = JSON.parse(JSON.stringify(INIT_ENROLLMENTS)); // {sid:[cid,...]}
+let progress       = {}; // {sid:{lesson_id:true}}
+let currentCourseId = null;
+let currentLessonId = null;
+
+// ════════════════════════════════════════════
+// API FUNCTIONS
+// ════════════════════════════════════════════
+async function fetchStudents() {
+  if (!USE_API) return STUDENTS;
+  try {
+    const res = await fetch(`${API}/students`);
+    const data = await res.json();
+    return data.students || STUDENTS;
+  } catch (e) {
+    console.error('Failed to fetch students:', e);
+    return STUDENTS;
+  }
+}
+
+async function fetchCourses() {
+  if (!USE_API) return COURSES;
+  try {
+    const res = await fetch(`${API}/courses`);
+    const data = await res.json();
+    // Add default values for fields the backend might not return
+    const courses = (data.courses || COURSES).map(c => ({
+      level: c.level || 'Beginner',
+      duration_hours: c.duration_hours || 8,
+      total_lessons: c.total_lessons || 5,
+      ...c
+    }));
+    return courses;
+  } catch (e) {
+    console.error('Failed to fetch courses:', e);
+    return COURSES;
+  }
+}
+
+// ════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════
+(async function boot() {
+  const students = await fetchStudents();
+  const courses = await fetchCourses();
+  
+  // Update globals with API data if available
+  if (students !== STUDENTS) {
+    STUDENTS.length = 0;
+    STUDENTS.push(...students);
+  }
+  if (courses !== COURSES) {
+    COURSES.length = 0;
+    COURSES.push(...courses);
+  }
+  
+  const sel = document.getElementById('student-sel');
+  STUDENTS.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = `${s.first_name} ${s.last_name}`;
+    sel.appendChild(o);
+  });
+  renderCatalog();
+})();
+
+// ════════════════════════════════════════════
+// PAGE SWITCHING
+// ════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(name === 'catalog' ? 'catalog' : 'learning')) t.classList.add('active');
+  });
+  if (name === 'panel') renderPanel();
+}
+
+// ════════════════════════════════════════════
+// STUDENT CHANGE
+// ════════════════════════════════════════════
+function onStudentChange() {
+  currentStudent = parseInt(document.getElementById('student-sel').value) || null;
+  currentCourseId = null;
+  currentLessonId = null;
+  updateStats();
+  renderCatalog();
+  if (document.getElementById('page-panel').classList.contains('active')) renderPanel();
+}
+
+function getMyEnrolled() {
+  if (!currentStudent) return [];
+  return enrollments[currentStudent] || [];
+}
+function getMyProgress() {
+  if (!currentStudent) return {};
+  return progress[currentStudent] || {};
+}
+function isLessonDone(lessonId) { return !!getMyProgress()[lessonId]; }
+
+// ════════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════════
+function updateStats() {
+  const n = getMyEnrolled().length;
+  document.getElementById('s-enrolled').textContent = currentStudent ? n : '—';
+}
+
+// ════════════════════════════════════════════
+// CATALOG
+// ════════════════════════════════════════════
+function renderCatalog() {
+  const q  = document.getElementById('search').value.toLowerCase();
+  const lv = document.getElementById('filter-level').value;
+  const fe = document.getElementById('filter-enroll').value;
+  const enrolled = getMyEnrolled();
+
+  const list = COURSES.filter(c => {
+    const mq = !q || c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q);
+    const ml = !lv || c.level === lv;
+    const me = fe === 'all' || (fe === 'enrolled' && enrolled.includes(c.id)) || (fe === 'available' && !enrolled.includes(c.id));
+    return mq && ml && me;
+  });
+
+  const grid = document.getElementById('catalog-grid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><span class="empty-icon">&#128269;</span>No courses match your filters.</div>';
+    return;
+  }
+  grid.innerHTML = list.map((c,i) => courseCardHTML(c, enrolled.includes(c.id), i)).join('');
+  updateStats();
+}
+
+const LEVEL_COLORS = {Beginner:'background:rgba(255,255,255,.22)',Intermediate:'background:rgba(255,200,0,.35)',Advanced:'background:rgba(255,100,100,.3)'};
+
+function courseCardHTML(c, isEnrolled, i) {
+  const noStudent = !currentStudent;
+  const doneCount = isEnrolled ? Object.keys(getMyProgress()).filter(lid => {
+    const lessons = CONTENT[c.id] || [];
+    return lessons.some(l => l.id == lid) && getMyProgress()[lid];
+  }).length : 0;
+
+  const footerLeft = isEnrolled
+    ? `<span class="enroll-status enrolled">&#10003; Enrolled</span>`
+    : `<span class="enroll-status open">&#9711; Open</span>`;
+
+  let footerRight = '';
+  if (noStudent) {
+    footerRight = `<button class="btn btn-enroll" disabled>Select student</button>`;
+  } else if (isEnrolled) {
+    footerRight = `
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-open" onclick="openCourse(${c.id})">Open &#9654;</button>
+        <button class="btn btn-unenroll" onclick="unenroll(${c.id})">Unenroll</button>
+      </div>`;
+  } else {
+    footerRight = `<button class="btn btn-enroll" onclick="enroll(${c.id})">Enroll Now</button>`;
+  }
+
+  return `
+  <div class="course-card">
+    <div class="card-header">
+      <div class="card-meta-row">
+        <span class="level-badge" style="${LEVEL_COLORS[c.level]||''}">${c.level}</span>
+        <span class="step-num">Step ${c.id}</span>
+      </div>
+      <div class="card-title">${c.title}</div>
+      <div class="card-hours">&#128337; ${c.duration_hours}h &nbsp;&bull;&nbsp; &#128218; ${c.total_lessons} lessons</div>
+    </div>
+    <div class="card-body"><p class="card-desc">${c.description}</p></div>
+    <div class="card-footer">${footerLeft}${footerRight}</div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════
+// ENROLL / UNENROLL
+// ════════════════════════════════════════════
+function enroll(courseId) {
+  if (!currentStudent) return;
+  if (!enrollments[currentStudent]) enrollments[currentStudent] = [];
+  if (!enrollments[currentStudent].includes(courseId)) {
+    enrollments[currentStudent].push(courseId);
+    const c = COURSES.find(x => x.id === courseId);
+    toast(`Enrolled in "${c.title}"`);
+  }
+  updateStats();
+  renderCatalog();
+}
+
+function unenroll(courseId) {
+  if (!currentStudent) return;
+  enrollments[currentStudent] = (enrollments[currentStudent]||[]).filter(id => id !== courseId);
+  if (currentCourseId === courseId) { currentCourseId = null; currentLessonId = null; }
+  const c = COURSES.find(x => x.id === courseId);
+  toast(`Removed from "${c.title}"`);
+  updateStats();
+  renderCatalog();
+  if (document.getElementById('page-panel').classList.contains('active')) renderPanel();
+}
+
+// ════════════════════════════════════════════
+// OPEN COURSE (from catalog -> jump to panel)
+// ════════════════════════════════════════════
+function openCourse(courseId) {
+  currentCourseId = courseId;
+  currentLessonId = null;
+  showPage('panel');
+  renderPanel();
+}
+
+// ════════════════════════════════════════════
+// STUDENT PANEL
+// ════════════════════════════════════════════
+function renderPanel() {
+  const content = document.getElementById('panel-content');
+  const subtitle = document.getElementById('panel-subtitle');
+
+  if (!currentStudent) {
+    subtitle.textContent = 'Select a student to view enrolled courses and access lessons.';
+    content.innerHTML = '<div class="empty"><span class="empty-icon">&#127891;</span>Select a student from the top bar to get started.</div>';
+    return;
+  }
+
+  const s = STUDENTS.find(x => x.id === currentStudent);
+  subtitle.textContent = `${s.first_name} ${s.last_name} — ${s.email}`;
+
+  const myIds = getMyEnrolled();
+  if (!myIds.length) {
+    content.innerHTML = '<div class="empty"><span class="empty-icon">&#128218;</span>Not enrolled in any courses yet. Go to the Catalog to enroll.</div>';
+    return;
+  }
+
+  const myCourses = COURSES.filter(c => myIds.includes(c.id));
+
+  // If no course selected yet, pick the first
+  if (!currentCourseId || !myIds.includes(currentCourseId)) {
+    currentCourseId = myCourses[0].id;
+  }
+
+  const lessons = CONTENT[currentCourseId] || [];
+  if (!currentLessonId && lessons.length) currentLessonId = lessons[0].id;
+
+  const currentLesson = lessons.find(l => l.id === currentLessonId);
+
+  // Build section groups for sidebar
+  const sections = {};
+  lessons.forEach(l => {
+    if (!sections[l.section_title]) sections[l.section_title] = [];
+    sections[l.section_title].push(l);
+  });
+
+  const myProg = getMyProgress();
+  const doneCount = lessons.filter(l => myProg[l.id]).length;
+  const pct = lessons.length ? Math.round((doneCount / lessons.length) * 100) : 0;
+
+  content.innerHTML = `
+  <div class="panel-grid">
+    <!-- LEFT: enrolled course list -->
+    <div>
+      <div class="enrolled-list">
+        <div class="enrolled-list-header"><h3>My Courses (${myCourses.length})</h3></div>
+        ${myCourses.map(c => {
+          const cls = CONTENT[c.id] || [];
+          const done = cls.filter(l => myProg[l.id]).length;
+          const p = cls.length ? Math.round((done/cls.length)*100) : 0;
+          const isActive = c.id === currentCourseId;
+          return `<div class="enrolled-item${isActive?' active':''}" onclick="selectCourse(${c.id})">
+            <div class="enrolled-item-title">${c.title}</div>
+            <div class="enrolled-item-meta">${done}/${cls.length} lessons &bull; ${p}%</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:${p}%"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- RIGHT: lesson viewer -->
+    <div class="lesson-viewer">
+      <div class="viewer-header">
+        <div class="viewer-header-info">
+          <div class="viewer-course-title">${COURSES.find(c=>c.id===currentCourseId).title}</div>
+          ${currentLesson ? `<div class="viewer-lesson-title">${currentLesson.lesson_title}</div>` : '<div class="viewer-lesson-title">Select a lesson</div>'}
+        </div>
+        ${currentLesson ? `<span class="viewer-badge badge-${currentLesson.lesson_type}">${currentLesson.lesson_type}</span>` : ''}
+        <div style="font-size:.8rem;color:var(--gray-400);margin-left:8px">${doneCount}/${lessons.length} done &bull; ${pct}%</div>
+      </div>
+
+      <div class="viewer-layout">
+        <!-- Sidebar lesson list -->
+        <div class="lesson-sidebar">
+          ${Object.entries(sections).map(([sec, lsns]) => `
+            <div class="section-group">
+              <div class="section-label">${sec}</div>
+              ${lsns.map(l => {
+                const done = myProg[l.id];
+                const isAct = l.id === currentLessonId;
+                return `<div class="lesson-item${isAct?' active':''}" onclick="selectLesson(${l.id})">
+                  <div class="check${done?' done':''}">&#10003;</div>
+                  <span>${l.lesson_title}</span>
+                </div>`;
+              }).join('')}
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Lesson content -->
+        <div>
+          <div class="viewer-body">
+            ${currentLesson
+              ? `<div class="lesson-content">${escHtml(currentLesson.lesson_body)}</div>`
+              : '<div class="empty"><span class="empty-icon">&#128196;</span>Select a lesson from the sidebar.</div>'}
+          </div>
+          <div class="viewer-footer">
+            ${currentLesson ? `
+              <button class="complete-btn ${myProg[currentLessonId]?'done':'undone'}"
+                onclick="toggleComplete(${currentLessonId})">
+                ${myProg[currentLessonId] ? '&#10003; Completed' : '&#9675; Mark as complete'}
+              </button>
+              <div class="nav-btns">
+                ${prevLesson(lessons) ? `<button class="nav-btn" onclick="selectLesson(${prevLesson(lessons).id})">&#8592; Prev</button>` : '<button class="nav-btn" disabled>&#8592; Prev</button>'}
+                ${nextLesson(lessons) ? `<button class="nav-btn" onclick="selectLesson(${nextLesson(lessons).id})">Next &#8594;</button>` : '<button class="nav-btn" disabled>Next &#8594;</button>'}
+              </div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function selectCourse(id) {
+  currentCourseId = id;
+  const lessons = CONTENT[id] || [];
+  currentLessonId = lessons.length ? lessons[0].id : null;
+  renderPanel();
+}
+
+function selectLesson(id) {
+  currentLessonId = id;
+  renderPanel();
+}
+
+function toggleComplete(lessonId) {
+  if (!currentStudent) return;
+  if (!progress[currentStudent]) progress[currentStudent] = {};
+  progress[currentStudent][lessonId] = !progress[currentStudent][lessonId];
+  renderPanel();
+}
+
+function prevLesson(lessons) {
+  const idx = lessons.findIndex(l => l.id === currentLessonId);
+  return idx > 0 ? lessons[idx-1] : null;
+}
+function nextLesson(lessons) {
+  const idx = lessons.findIndex(l => l.id === currentLessonId);
+  return idx < lessons.length-1 ? lessons[idx+1] : null;
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════
+let _toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
