@@ -1,24 +1,3 @@
-"""
-Course Enrollment System - Backend API
-Python Flask Implementation
-
-Setup:
-    pip install flask flask-cors mysql-connector-python
-    python backend_api.py
-
-Endpoints:
-    GET  /health                            - Health check
-    GET  /students                          - List all students
-    GET  /courses                           - List all courses
-    GET  /courses/<id>                      - Get single course
-    GET  /courses/<id>/content              - Get all lessons for a course
-    GET  /enrollments/<student_id>          - Get student's enrolled courses
-    POST /enroll                            - Enroll student in course
-    DELETE /unenroll                        - Remove student from course
-    GET  /progress/<student_id>/<course_id> - Get lesson progress
-    POST /progress                          - Mark lesson complete/incomplete
-"""
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import mysql.connector
@@ -30,7 +9,7 @@ CORS(app)
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "your_password",   # <-- update this
+    "password": "your_password",   
     "database": "course_enrollment_system",
 }
 
@@ -43,13 +22,13 @@ def get_db():
         return None
 
 
-# ── Health ───────────────────────────────────────────────────────────────────
+# Health 
 @app.route("/health")
 def health():
     return jsonify({"status": "ok"}), 200
 
 
-# ── Students ─────────────────────────────────────────────────────────────────
+# Students 
 @app.route("/students")
 def get_students():
     conn = get_db()
@@ -68,7 +47,7 @@ def get_students():
     return jsonify({"success": True, "students": rows, "count": len(rows)}), 200
 
 
-# ── Courses ──────────────────────────────────────────────────────────────────
+# Courses 
 @app.route("/courses")
 def get_courses():
     conn = get_db()
